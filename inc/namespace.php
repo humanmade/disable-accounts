@@ -38,7 +38,7 @@ function bootstrap() : void {
  *
  * @param bool $allow Whether to allow the password to be reset. Default true.
  * @param int $user_id The ID of the user attempting to reset a password.
- * @return bool True to allow resetting, false if it is blocked.
+ * @return bool|WP_Error Error if the user is disabled, otherwise passes $allow through.
  */
 function maybe_disable_password_reset( $allow, $user_id ) {
 	$user = get_user_by( 'ID', $user_id );
