@@ -45,7 +45,7 @@ function maybe_disable_password_reset( $allow, $user_id ) {
 	if ( is_disabled( $user ) ) {
 		return new WP_Error(
 			'hm.disableaccounts.disabled',
-			'This account has been disabled, and the password cannot be reset.'
+			__( 'This account has been disabled, and the password cannot be reset.', 'hm_disableaccounts' )
 		);
 	}
 
@@ -65,7 +65,7 @@ function maybe_prevent_login( $user ) {
 	if ( $user instanceof WP_User && is_disabled( $user ) ) {
 		return new WP_Error(
 			'hm.disableaccounts.disabled',
-			'<strong>Error</strong>: Your account has been disabled.'
+			__( '<strong>Error</strong>: Your account has been disabled.', 'hm_disableaccounts' )
 		);
 	}
 
@@ -148,19 +148,19 @@ function render_messages() : void {
 
 	switch ( $_GET[ STATUS_KEY ] ) {
 		case 'enabled':
-			$message = 'User re-enabled.';
+			$message = __( 'User re-enabled.', 'hm_disableaccounts' );
 			break;
 
 		case 'enabled_bulk':
-			$message = 'Users re-enabled.';
+			$message = __( 'Users re-enabled.', 'hm_disableaccounts' );
 			break;
 
 		case 'disabled':
-			$message = 'User disabled.';
+			$message = __( 'User disabled.', 'hm_disableaccounts' );
 			break;
 
 		case 'disabled_bulk':
-			$message = 'Users disabled.';
+			$message = __( 'Users disabled.', 'hm_disableaccounts' );
 			break;
 	}
 
@@ -192,7 +192,10 @@ function register_row_action( array $actions, WP_User $user ) : array {
 	if ( $is_disabled ) {
 		// **Echo** an indicator, to escape the default actions handling.
 		// (There's really no other great way to do this.)
-		echo '<strong> &mdash; Disabled</strong>';
+		printf(
+			'<strong> &mdash; %s</strong>',
+			__( 'Disabled', 'hm_disableaccounts' )
+		);
 	}
 
 	$args = [
@@ -204,7 +207,7 @@ function register_row_action( array $actions, WP_User $user ) : array {
 	$actions['hm_disableaccounts'] = sprintf(
 		'<a href="%s" class="delete">%s</a>',
 		esc_url( $url ),
-		$is_disabled ? 'Re-enable' : 'Disable'
+		$is_disabled ? __( 'Re-enable', 'hm_disableaccounts' ) : __( 'Disable', 'hm_disableaccounts' )
 	);
 
 	return $actions;
@@ -226,21 +229,21 @@ function handle_single_action()  : void {
 	check_admin_referer( SINGLE_ACTION_NONCE );
 
 	if ( ! current_user_can( 'manage_network_users' ) ) {
-		wp_die( __( 'Sorry, you are not allowed to access this page.' ), 403 );
+		wp_die( __( 'Sorry, you are not allowed to access this page.', 'hm_disableaccounts' ), 403 );
 	}
 
 	$user = get_user_by( 'ID', absint( wp_unslash( $_GET['id'] ) ) );
 	if ( empty( $user ) || ! $user->exists() || is_wp_error( $user ) ) {
-		wp_die( 'Invalid user ID.', 404 );
+		wp_die( __( 'Invalid user ID.', 'hm_disableaccounts' ), 404 );
 	}
 
 	if ( ! current_user_can( 'edit_user', $user->ID ) ) {
-		wp_die( __( 'Sorry, you are not allowed to access this page.' ), 403 );
+		wp_die( __( 'Sorry, you are not allowed to access this page.', 'hm_disableaccounts' ), 403 );
 	}
 
 	$current_user = wp_get_current_user();
 	if ( $user->ID === $current_user->ID ) {
-		wp_die( __( 'Sorry, you cannot disable your own account.' ), 403 );
+		wp_die( __( 'Sorry, you cannot disable your own account.', 'hm_disableaccounts' ), 403 );
 	}
 
 	$action = wp_unslash( $_REQUEST['action'] ?? '' );
@@ -257,7 +260,7 @@ function handle_single_action()  : void {
 			break;
 
 		default:
-			wp_die( __( 'Sorry, you are not allowed to access this page.' ), 403 );
+			wp_die( __( 'Sorry, you are not allowed to access this page.', 'hm_disableaccounts' ), 403 );
 	}
 
 	$sendback = wp_get_referer();
@@ -274,8 +277,8 @@ function handle_single_action()  : void {
  */
 function register_bulk_action( array $actions ) : array {
 	if ( current_user_can( 'manage_network_users' ) ) {
-		$actions[ DISABLE_ACTION_BULK ] = 'Disable users';
-		$actions[ ENABLE_ACTION_BULK ] = 'Re-enable users';
+		$actions[ DISABLE_ACTION_BULK ] = __( 'Disable users', 'hm_disableaccounts' );
+		$actions[ ENABLE_ACTION_BULK ] = __( 'Re-enable users', 'hm_disableaccounts' );
 	}
 
 	return $actions;
