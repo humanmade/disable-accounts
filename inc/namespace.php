@@ -246,7 +246,7 @@ function handle_single_action()  : void {
 		wp_die( __( 'Sorry, you cannot disable your own account.', 'hm_disableaccounts' ), 403 );
 	}
 
-	$action = wp_unslash( $_REQUEST['action'] ?? '' );
+	$action = sanitize_key( wp_unslash( $_REQUEST['action'] ?? '' ) );
 	$status = '';
 	switch ( $action ) {
 		case DISABLE_ACTION:
