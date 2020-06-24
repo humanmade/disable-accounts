@@ -3,6 +3,7 @@
 namespace DisableAccounts;
 
 use WP_Error;
+use WP_Http;
 use WP_Session_Tokens;
 use WP_User;
 
@@ -229,21 +230,21 @@ function handle_single_action()  : void {
 	check_admin_referer( SINGLE_ACTION_NONCE );
 
 	if ( ! current_user_can( 'manage_network_users' ) ) {
-		wp_die( __( 'Sorry, you are not allowed to access this page.', 'hm_disableaccounts' ), 403 );
+		wp_die( __( 'Sorry, you are not allowed to access this page.', 'hm_disableaccounts' ), WP_Http::FORBIDDEN );
 	}
 
 	$user = get_user_by( 'ID', absint( wp_unslash( $_GET['id'] ) ) );
 	if ( empty( $user ) || ! $user->exists() || is_wp_error( $user ) ) {
-		wp_die( __( 'Invalid user ID.', 'hm_disableaccounts' ), 400 );
+		wp_die( __( 'Invalid user ID.', 'hm_disableaccounts' ), WP_Http::BAD_REQUEST );
 	}
 
 	if ( ! current_user_can( 'edit_user', $user->ID ) ) {
-		wp_die( __( 'Sorry, you are not allowed to access this page.', 'hm_disableaccounts' ), 403 );
+		wp_die( __( 'Sorry, you are not allowed to access this page.', 'hm_disableaccounts' ), WP_Http::FORBIDDEN );
 	}
 
 	$current_user = wp_get_current_user();
 	if ( $user->ID === $current_user->ID ) {
-		wp_die( __( 'Sorry, you cannot disable your own account.', 'hm_disableaccounts' ), 403 );
+		wp_die( __( 'Sorry, you cannot disable your own account.', 'hm_disableaccounts' ), WP_Http::FORBIDDEN );
 	}
 
 	$action = sanitize_key( wp_unslash( $_REQUEST['action'] ?? '' ) );
@@ -260,7 +261,7 @@ function handle_single_action()  : void {
 			break;
 
 		default:
-			wp_die( __( 'Sorry, you are not allowed to access this page.', 'hm_disableaccounts' ), 403 );
+			wp_die( __( 'Sorry, you are not allowed to access this page.', 'hm_disableaccounts' ), WP_Http::FORBIDDEN );
 	}
 
 	$sendback = wp_get_referer();
