@@ -196,9 +196,9 @@ function register_row_action( array $actions, WP_User $user ) : array {
 	}
 
 	$args = [
-		'_wp_http_referer' => wp_unslash( $_SERVER['REQUEST_URI'] ),
-		'action' => $is_disabled ? ENABLE_ACTION : DISABLE_ACTION,
-		'id' => $user->ID,
+		'_wp_http_referer' => urlencode( wp_unslash( $_SERVER['REQUEST_URI'] ) ),
+		'action' => urlencode( $is_disabled ? ENABLE_ACTION : DISABLE_ACTION ),
+		'id' => urlencode( $user->ID ),
 	];
 	$url = add_query_arg( $args, wp_nonce_url( network_admin_url( 'users.php' ), SINGLE_ACTION_NONCE ) );
 	$actions['hm_disableaccounts'] = sprintf(
