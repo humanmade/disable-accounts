@@ -234,7 +234,7 @@ function handle_single_action()  : void {
 
 	$user = get_user_by( 'ID', absint( wp_unslash( $_GET['id'] ) ) );
 	if ( empty( $user ) || ! $user->exists() || is_wp_error( $user ) ) {
-		wp_die( __( 'Invalid user ID.', 'hm_disableaccounts' ), 404 );
+		wp_die( __( 'Invalid user ID.', 'hm_disableaccounts' ), 400 );
 	}
 
 	if ( ! current_user_can( 'edit_user', $user->ID ) ) {
