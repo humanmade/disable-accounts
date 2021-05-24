@@ -24,6 +24,7 @@ function bootstrap() : void {
 	add_filter( 'allow_password_reset', __NAMESPACE__ . '\\maybe_disable_password_reset', 10, 2 );
 	add_action( 'authenticate', __NAMESPACE__ . '\\maybe_prevent_login', 100, 2 );
 	add_filter( 'user_has_cap', __NAMESPACE__ . '\\maybe_wipe_caps', 100, 4 );
+	add_filter( 'wp_is_application_passwords_available_for_user', __NAMESPACE__ . '\\maybe_disable_application_passwords_for_user', 10, 2 );
 
 	// UI for the actions.
 	add_action( 'network_admin_notices', __NAMESPACE__ . '\\render_messages' );
@@ -48,6 +49,22 @@ function maybe_disable_password_reset( $allow, $user_id ) {
 			'hm.disableaccounts.disabled',
 			__( 'This account has been disabled, and the password cannot be reset.', 'hm_disableaccounts' )
 		);
+	}
+
+	return $allow;
+}
+
+/**
+ * Prevent users with disabled accounts to use application passwords.
+ *
+ * @param bool $allow Whether to enable application passwords for the user. Default true.
+ * @param WP_User $user user that is trying to access application passwords.
+ *
+ * @return void
+ */
+function maybe_disable_application_passwords_for_user( $allow, $user ) {
+	if ( is_disabled( $user ) ) {
+		$allow = false;
 	}
 
 	return $allow;
