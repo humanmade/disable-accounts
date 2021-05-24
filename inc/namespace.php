@@ -60,7 +60,7 @@ function maybe_disable_password_reset( $allow, $user_id ) {
  * @param bool $allow Whether to enable application passwords for the user. Default true.
  * @param WP_User $user user that is trying to access application passwords.
  *
- * @return void
+ * @return bool true if application passwords should be enabled, false if it should be disabled.
  */
 function maybe_disable_application_passwords_for_user( $allow, $user ) {
 	if ( is_disabled( $user ) ) {
