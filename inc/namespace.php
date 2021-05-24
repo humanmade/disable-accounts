@@ -64,7 +64,7 @@ function maybe_disable_password_reset( $allow, $user_id ) {
  */
 function maybe_disable_application_passwords_for_user( $allow, $user ) {
 	if ( is_disabled( $user ) ) {
-		$allow = false;
+		return false;
 	}
 
 	return $allow;
