@@ -117,7 +117,7 @@ function disable_user( WP_User $user ) : void {
 	// Change the user's password to a random one. This will immediately halt
 	// access for that user.
 	$random_password = wp_generate_password( 40, true, true );
-	wp_set_password( $user->ID, $random_password );
+	wp_set_password( $random_password, $user->ID );
 
 	// Destroy all logged in sessions for the user.
 	$sessions = WP_Session_Tokens::get_instance( $user->ID );
