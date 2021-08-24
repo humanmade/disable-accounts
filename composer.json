@@ -1,0 +1,12 @@
+{
+    "name": "humanmade/disable-accounts",
+    "description": "Disable and re-enable user accounts in WordPress with losing content or attribution",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "Human Made Limited",
+            "email": "hello@humanmade.com"
+        }
+    ]
+}
