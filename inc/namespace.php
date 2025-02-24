@@ -9,9 +9,13 @@ use WP_User;
 
 const DISABLE_ACTION = 'hm_disableaccounts_disable';
 const DISABLE_ACTION_BULK = 'hm_disableaccounts_disable_bulk';
+const DISABLE_USER_ACTION = 'hm_disableaccounts_disable_user';
+const DISABLED_USER_ACTION = 'hm_disableaccounts_disabled_user';
 const ENABLE_ACTION = 'hm_disableaccounts_enable';
 const ENABLE_ACTION_BULK = 'hm_disableaccounts_enable_bulk';
 const DISABLED_META_KEY = '_hm_disableaccounts_disabled';
+const REENABLE_USER_ACTION = 'hm_disableaccounts_reenable_user';
+const REENABLED_USER_ACTION = 'hm_disableaccounts_reenabled_user';
 const SINGLE_ACTION_NONCE = 'hm_disableaccounts';
 const STATUS_KEY = 'hm_disableaccounts_success';
 
@@ -128,6 +132,9 @@ function is_disabled( WP_User $user ) : bool {
  * @return void
  */
 function disable_user( WP_User $user ) : void {
+	// Notify that this user is going to be disabled.
+	do_action( DISABLE_USER_ACTION, $user->ID, $user );
+
 	// Set the disabled flag.
 	update_user_meta( $user->ID, DISABLED_META_KEY, 'yes' );
 
@@ -139,6 +146,9 @@ function disable_user( WP_User $user ) : void {
 	// Destroy all logged in sessions for the user.
 	$sessions = WP_Session_Tokens::get_instance( $user->ID );
 	$sessions->destroy_all();
+
+	// Notify that the user has been disabled.
+	do_action( DISABLED_USER_ACTION, $user->ID, $user );
 }
 
 /**
@@ -151,7 +161,9 @@ function disable_user( WP_User $user ) : void {
  * @return void
  */
 function reenable_user( WP_User $user ) : void {
+	do_action( REENABLE_USER_ACTION, $user->ID, $user );
 	delete_user_meta( $user->ID, DISABLED_META_KEY );
+	do_action( REENABLED_USER_ACTION, $user->ID, $user );
 }
 
 /**
