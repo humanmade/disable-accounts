@@ -37,6 +37,8 @@ function bootstrap() : void {
 	add_action( 'admin_action_' . ENABLE_ACTION, __NAMESPACE__ . '\\handle_single_action' );
 	add_filter( 'bulk_actions-users-network', __NAMESPACE__ . '\\register_bulk_action' );
 	add_filter( 'handle_network_bulk_actions-users-network', __NAMESPACE__ . '\\handle_bulk_action', 10, 3 );
+	add_filter( 'views_users-network', __NAMESPACE__ . '\\add_status_views' );
+	add_filter( 'users_list_table_query_args', __NAMESPACE__ . '\\filter_users_by_status' );
 }
 
 /**
@@ -362,4 +364,91 @@ function handle_bulk_action( string $sendback, string $action, array $user_ids )
 	}
 
 	return add_query_arg( STATUS_KEY, $status, $sendback );
+}
+
+/**
+ * Add Active and Disabled views to the Network Admin users list.
+ *
+ * @param array<string, string> $views Existing views.
+ * @return array<string, string> Updated views.
+ */
+function add_status_views( array $views ) : array {
+	global $role;
+
+	$disabled_count = (int) ( new \WP_User_Query( [
+		'meta_key'    => DISABLED_META_KEY,
+		'meta_value'  => 'yes',
+		'count_total' => true,
+		'number'      => 0,
+		'blog_id'     => 0,
+	] ) )->get_total();
+
+	$total_users  = (int) get_user_count();
+	$active_count = $total_users - $disabled_count;
+
+	$views['active'] = sprintf(
+		'<a href="%s"%s>%s</a>',
+		esc_url( network_admin_url( 'users.php?role=active' ) ),
+		'active' === $role ? ' class="current" aria-current="page"' : '',
+		sprintf(
+			/* translators: %s: Number of active users. */
+			__( 'Active <span class="count">(%s)</span>', 'hm_disableaccounts' ),
+			number_format_i18n( $active_count )
+		)
+	);
+
+	$views['disabled'] = sprintf(
+		'<a href="%s"%s>%s</a>',
+		esc_url( network_admin_url( 'users.php?role=disabled' ) ),
+		'disabled' === $role ? ' class="current" aria-current="page"' : '',
+		sprintf(
+			/* translators: %s: Number of disabled users. */
+			__( 'Disabled <span class="count">(%s)</span>', 'hm_disableaccounts' ),
+			number_format_i18n( $disabled_count )
+		)
+	);
+
+	// Remove current class from "All" when viewing active/disabled.
+	if ( in_array( $role, [ 'active', 'disabled' ], true ) && isset( $views['all'] ) ) {
+		$views['all'] = preg_replace( '/ class="current"/', '', $views['all'] );
+		$views['all'] = preg_replace( '/ aria-current="page"/', '', $views['all'] );
+	}
+
+	return $views;
+}
+
+/**
+ * Filter the user query when Active or Disabled view is selected.
+ *
+ * @param array $args WP_User_Query arguments.
+ * @return array Modified arguments.
+ */
+function filter_users_by_status( array $args ) : array {
+	if ( ! is_network_admin() ) {
+		return $args;
+	}
+
+	$role = $_REQUEST['role'] ?? '';
+
+	if ( 'active' === $role ) {
+		$args['meta_query'][] = [
+			'relation' => 'OR',
+			[
+				'key'     => DISABLED_META_KEY,
+				'compare' => 'NOT EXISTS',
+			],
+			[
+				'key'     => DISABLED_META_KEY,
+				'value'   => 'yes',
+				'compare' => '!=',
+			],
+		];
+	} elseif ( 'disabled' === $role ) {
+		$args['meta_query'][] = [
+			'key'   => DISABLED_META_KEY,
+			'value' => 'yes',
+		];
+	}
+
+	return $args;
 }
